@@ -7,7 +7,7 @@ from daily_ai_papers.tasks.celery_app import app
 logger = logging.getLogger(__name__)
 
 
-@app.task(name="daily_ai_papers.tasks.parse_tasks.parse_paper")
+@app.task(name="daily_ai_papers.tasks.parse_tasks.parse_paper")  # type: ignore[untyped-decorator]
 def parse_paper(paper_id: int) -> dict[str, str]:
     """Download, parse, and analyze a single paper.
 
@@ -19,4 +19,4 @@ def parse_paper(paper_id: int) -> dict[str, str]:
     5. Dispatch embedding task
     """
     logger.info("parse_paper task triggered for paper_id=%d", paper_id)
-    return {"paper_id": paper_id, "status": "not_implemented"}
+    return {"paper_id": str(paper_id), "status": "not_implemented"}

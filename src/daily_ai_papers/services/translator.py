@@ -48,5 +48,7 @@ async def translate_text(text: str, target_language: str) -> str:
 
     logger.info("Translating %d chars to %s", len(text), language_name)
     result = await llm_complete(prompt, system=SYSTEM_PROMPT)
-    logger.info("Translation complete: %d chars -> %d chars (%s)", len(text), len(result), language_name)
+    logger.info(
+        "Translation complete: %d chars -> %d chars (%s)", len(text), len(result), language_name
+    )
     return result.strip()

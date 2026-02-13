@@ -20,14 +20,16 @@ from .conftest import SAMPLE_ABSTRACT
 
 # ── Skip guard ──────────────────────────────────────────────────────────────
 _has_llm_key = bool(settings.llm_api_key or os.environ.get("LLM_API_KEY"))
+_is_fake_provider = (settings.llm_provider == "fake") or (os.environ.get("LLM_PROVIDER") == "fake")
 
 pytestmark = pytest.mark.skipif(
-    not _has_llm_key,
-    reason="LLM_API_KEY not set — skipping LLM integration tests",
+    not _has_llm_key or _is_fake_provider,
+    reason="LLM_API_KEY not set or LLM_PROVIDER=fake — skipping LLM integration tests",
 )
 
 
 # ── LLM client ──────────────────────────────────────────────────────────────
+
 
 class TestLLMClient:
     """Test the low-level llm_complete function."""
@@ -61,6 +63,7 @@ class TestLLMClient:
 
 # ── Metadata extraction ────────────────────────────────────────────────────
 
+
 class TestMetadataExtraction:
     """Test LLM-based metadata extraction on a real abstract."""
 
@@ -72,10 +75,7 @@ class TestMetadataExtraction:
 
         # Summary should be non-empty and mention the paper's topic
         assert len(meta.summary) > 50
-        assert any(
-            kw in meta.summary.lower()
-            for kw in ["transformer", "attention", "translation"]
-        )
+        assert any(kw in meta.summary.lower() for kw in ["transformer", "attention", "translation"])
 
         # Should have at least 1 contribution and 3 keywords
         assert len(meta.contributions) >= 1
@@ -93,6 +93,7 @@ class TestMetadataExtraction:
 
 
 # ── Translation ─────────────────────────────────────────────────────────────
+
 
 class TestTranslation:
     """Test LLM-based translation."""

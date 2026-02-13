@@ -7,7 +7,7 @@ from daily_ai_papers.tasks.celery_app import app
 logger = logging.getLogger(__name__)
 
 
-@app.task(name="daily_ai_papers.tasks.crawl_tasks.crawl_all_sources")
+@app.task(name="daily_ai_papers.tasks.crawl_tasks.crawl_all_sources")  # type: ignore[untyped-decorator]
 def crawl_all_sources() -> dict[str, int]:
     """Crawl papers from all configured sources.
 
@@ -22,7 +22,7 @@ def crawl_all_sources() -> dict[str, int]:
     return {"new_papers": 0}
 
 
-@app.task(
+@app.task(  # type: ignore[untyped-decorator]
     name="daily_ai_papers.tasks.crawl_tasks.fetch_submitted_paper",
     bind=True,
     max_retries=3,
@@ -51,7 +51,7 @@ def fetch_submitted_paper(self, source: str, source_id: str) -> dict[str, str]: 
         paper = asyncio.run(crawler.fetch_paper_by_id(source_id))
     except Exception as exc:
         logger.exception("Failed to fetch %s:%s", source, source_id)
-        raise self.retry(exc=exc)
+        raise self.retry(exc=exc) from exc
 
     if paper is None:
         return {"source_id": source_id, "status": "not_found"}

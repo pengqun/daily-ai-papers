@@ -81,7 +81,9 @@ class TestFakeTranslation:
     async def test_translate_to_japanese(self) -> None:
         result = await translate_text("Attention is all you need.", "ja")
         has_jp = any(
-            ("\u3040" <= ch <= "\u309f") or ("\u30a0" <= ch <= "\u30ff") or ("\u4e00" <= ch <= "\u9fff")
+            ("\u3040" <= ch <= "\u309f")
+            or ("\u30a0" <= ch <= "\u30ff")
+            or ("\u4e00" <= ch <= "\u9fff")
             for ch in result
         )
         assert has_jp
