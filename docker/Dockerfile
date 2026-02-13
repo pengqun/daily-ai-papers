@@ -8,10 +8,10 @@ RUN apt-get update && \
         libmupdf-dev \
     && rm -rf /var/lib/apt/lists/*
 
+# Copy source first so hatchling can find the package, then install
 COPY pyproject.toml .
-RUN pip install --no-cache-dir .
-
 COPY src/ src/
+RUN pip install --no-cache-dir .
 
 EXPOSE 8000
 CMD ["uvicorn", "daily_ai_papers.main:app", "--host", "0.0.0.0", "--port", "8000"]

@@ -16,24 +16,14 @@ import pytest
 
 from daily_ai_papers.config import settings
 
+from .conftest import SAMPLE_ABSTRACT
+
 # ── Skip guard ──────────────────────────────────────────────────────────────
 _has_llm_key = bool(settings.llm_api_key or os.environ.get("LLM_API_KEY"))
 
 pytestmark = pytest.mark.skipif(
     not _has_llm_key,
     reason="LLM_API_KEY not set — skipping LLM integration tests",
-)
-
-# ── Sample data ─────────────────────────────────────────────────────────────
-SAMPLE_ABSTRACT = (
-    "The dominant sequence transduction models are based on complex recurrent or "
-    "convolutional neural networks that include an encoder and a decoder. The best "
-    "performing models also connect the encoder and decoder through an attention "
-    "mechanism. We propose a new simple network architecture, the Transformer, "
-    "based solely on attention mechanisms, dispensing with recurrence and convolutions "
-    "entirely. Experiments on two machine translation tasks show these models to "
-    "be superior in quality while being more parallelizable and requiring significantly "
-    "less time to train."
 )
 
 

@@ -2,6 +2,7 @@
 
 import logging
 from datetime import datetime, timedelta, timezone
+from typing import Any
 
 import feedparser
 import httpx
@@ -11,6 +12,25 @@ from daily_ai_papers.services.crawler.base import BaseCrawler, CrawledPaper
 logger = logging.getLogger(__name__)
 
 ARXIV_API_URL = "https://export.arxiv.org/api/query"
+
+
+def _parse_entry(entry: Any, paper_id: str | None = None) -> CrawledPaper:
+    """Convert a feedparser entry into a CrawledPaper."""
+    published = datetime(*entry.published_parsed[:6], tzinfo=timezone.utc)
+    pdf_url = next(
+        (link.href for link in entry.links if link.get("type") == "application/pdf"),
+        None,
+    )
+    return CrawledPaper(
+        source="arxiv",
+        source_id=paper_id or entry.id.split("/abs/")[-1],
+        title=entry.title.replace("\n", " ").strip(),
+        abstract=entry.summary.strip() if entry.summary else None,
+        pdf_url=pdf_url,
+        published_at=published,
+        categories=[tag.term for tag in entry.tags],
+        author_names=[a.name for a in entry.authors],
+    )
 
 
 class ArxivCrawler(BaseCrawler):
@@ -43,26 +63,7 @@ class ArxivCrawler(BaseCrawler):
             published = datetime(*entry.published_parsed[:6], tzinfo=timezone.utc)
             if published < cutoff:
                 continue
-
-            arxiv_id = entry.id.split("/abs/")[-1]
-            pdf_url = next(
-                (link.href for link in entry.links if link.get("type") == "application/pdf"),
-                None,
-            )
-            categories_list = [tag.term for tag in entry.tags]
-
-            papers.append(
-                CrawledPaper(
-                    source="arxiv",
-                    source_id=arxiv_id,
-                    title=entry.title.replace("\n", " ").strip(),
-                    abstract=entry.summary.strip() if entry.summary else None,
-                    pdf_url=pdf_url,
-                    published_at=published,
-                    categories=categories_list,
-                    author_names=[a.name for a in entry.authors],
-                )
-            )
+            papers.append(_parse_entry(entry))
 
         logger.info("Fetched %d papers from arXiv (categories: %s)", len(papers), categories)
         return papers
@@ -89,22 +90,6 @@ class ArxivCrawler(BaseCrawler):
             logger.warning("arXiv returned empty entry for id=%s", paper_id)
             return None
 
-        published = datetime(*entry.published_parsed[:6], tzinfo=timezone.utc)
-        pdf_url = next(
-            (link.href for link in entry.links if link.get("type") == "application/pdf"),
-            None,
-        )
-        categories_list = [tag.term for tag in entry.tags]
-
-        paper = CrawledPaper(
-            source="arxiv",
-            source_id=paper_id,
-            title=entry.title.replace("\n", " ").strip(),
-            abstract=entry.summary.strip() if entry.summary else None,
-            pdf_url=pdf_url,
-            published_at=published,
-            categories=categories_list,
-            author_names=[a.name for a in entry.authors],
-        )
+        paper = _parse_entry(entry, paper_id=paper_id)
         logger.info("Fetched paper from arXiv: %s", paper.title)
         return paper

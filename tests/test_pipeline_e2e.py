@@ -12,7 +12,7 @@ import pytest
 
 from daily_ai_papers.config import settings
 
-KNOWN_ARXIV_ID = "1706.03762"  # "Attention Is All You Need"
+from .conftest import KNOWN_ARXIV_ID
 
 _has_llm_key = bool(settings.llm_api_key or os.environ.get("LLM_API_KEY"))
 

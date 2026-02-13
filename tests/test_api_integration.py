@@ -8,34 +8,21 @@ skipped when PostgreSQL is unavailable.  The health check always runs.
 """
 
 import pytest
-from httpx import ASGITransport, AsyncClient
-
-from daily_ai_papers.main import app
-
-
-@pytest.fixture
-def base_url() -> str:
-    return "http://testserver"
+from httpx import AsyncClient
 
 
 @pytest.mark.asyncio
-async def test_health_check(base_url: str) -> None:
+async def test_health_check(api_client: AsyncClient) -> None:
     """GET /health should always return ok."""
-    transport = ASGITransport(app=app)
-    async with AsyncClient(transport=transport, base_url=base_url) as client:
-        resp = await client.get("/health")
-
+    resp = await api_client.get("/health")
     assert resp.status_code == 200
     assert resp.json() == {"status": "ok"}
 
 
 @pytest.mark.asyncio
-async def test_openapi_schema_available(base_url: str) -> None:
+async def test_openapi_schema_available(api_client: AsyncClient) -> None:
     """The auto-generated OpenAPI schema should be accessible."""
-    transport = ASGITransport(app=app)
-    async with AsyncClient(transport=transport, base_url=base_url) as client:
-        resp = await client.get("/openapi.json")
-
+    resp = await api_client.get("/openapi.json")
     assert resp.status_code == 200
     schema = resp.json()
     assert schema["info"]["title"] == "daily-ai-papers"
@@ -45,26 +32,20 @@ async def test_openapi_schema_available(base_url: str) -> None:
 
 
 @pytest.mark.asyncio
-async def test_submit_paper_validation_error(base_url: str) -> None:
+async def test_submit_paper_validation_error(api_client: AsyncClient) -> None:
     """POST /submit with empty paper_ids should return 422."""
-    transport = ASGITransport(app=app)
-    async with AsyncClient(transport=transport, base_url=base_url) as client:
-        resp = await client.post(
-            "/api/v1/papers/submit",
-            json={"source": "arxiv", "paper_ids": []},
-        )
-
+    resp = await api_client.post(
+        "/api/v1/papers/submit",
+        json={"source": "arxiv", "paper_ids": []},
+    )
     assert resp.status_code == 422  # validation error — min_length=1
 
 
 @pytest.mark.asyncio
-async def test_submit_paper_invalid_source(base_url: str) -> None:
+async def test_submit_paper_invalid_source(api_client: AsyncClient) -> None:
     """POST /submit with unsupported source should return 422."""
-    transport = ASGITransport(app=app)
-    async with AsyncClient(transport=transport, base_url=base_url) as client:
-        resp = await client.post(
-            "/api/v1/papers/submit",
-            json={"source": "not_a_real_source", "paper_ids": ["1234.5678"]},
-        )
-
+    resp = await api_client.post(
+        "/api/v1/papers/submit",
+        json={"source": "not_a_real_source", "paper_ids": ["1234.5678"]},
+    )
     assert resp.status_code == 422

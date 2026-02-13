@@ -133,7 +133,7 @@ def _fake_complete(prompt: str, response_json: bool) -> str:
     prompt_lower = prompt.lower()
 
     # Metadata extraction prompt
-    if "extract structured metadata" in prompt_lower or "contributions" in prompt_lower and "keywords" in prompt_lower:
+    if "extract structured metadata" in prompt_lower or ("contributions" in prompt_lower and "keywords" in prompt_lower):
         return json.dumps({
             "summary": (
                 "This paper proposes the Transformer, a novel architecture based entirely "

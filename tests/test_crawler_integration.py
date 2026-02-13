@@ -5,14 +5,12 @@ import pytest
 from daily_ai_papers.services.crawler.arxiv import ArxivCrawler
 from daily_ai_papers.services.crawler.base import CrawledPaper
 
+from .conftest import KNOWN_ARXIV_ID
+
 
 @pytest.fixture
 def crawler() -> ArxivCrawler:
     return ArxivCrawler()
-
-
-# A well-known paper that will always exist: "Attention Is All You Need"
-KNOWN_ARXIV_ID = "1706.03762"
 
 
 class TestFetchPaperById:

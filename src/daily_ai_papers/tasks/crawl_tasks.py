@@ -40,18 +40,15 @@ def fetch_submitted_paper(self, source: str, source_id: str) -> dict[str, str]: 
     """
     import asyncio
 
-    from daily_ai_papers.services.crawler.arxiv import ArxivCrawler
+    from daily_ai_papers.services.submission import _get_crawler
 
-    crawlers = {"arxiv": ArxivCrawler()}
-
-    crawler = crawlers.get(source)
-    if crawler is None:
+    try:
+        crawler = _get_crawler(source)
+    except ValueError:
         return {"source_id": source_id, "status": "error", "message": f"Unknown source: {source}"}
 
     try:
-        paper = asyncio.get_event_loop().run_until_complete(
-            crawler.fetch_paper_by_id(source_id)
-        )
+        paper = asyncio.run(crawler.fetch_paper_by_id(source_id))
     except Exception as exc:
         logger.exception("Failed to fetch %s:%s", source, source_id)
         raise self.retry(exc=exc)
