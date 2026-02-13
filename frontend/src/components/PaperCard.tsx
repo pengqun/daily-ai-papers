@@ -1,4 +1,4 @@
-import { Link } from "react-router-dom";
+import { Link } from "react-router";
 import { Calendar, Users, Tag } from "lucide-react";
 import type { PaperListItem } from "../types/paper";
 import StatusBadge from "./StatusBadge";
