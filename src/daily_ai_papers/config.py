@@ -15,6 +15,7 @@ class Settings(BaseSettings):
     # LLM
     llm_provider: str = "openai"  # "openai" or "anthropic"
     llm_api_key: str = ""
+    llm_base_url: str = ""  # Custom base URL for OpenAI-compatible APIs (e.g. Groq, OpenRouter)
     llm_model: str = "gpt-4o-mini"
     embedding_model: str = "text-embedding-3-small"
 

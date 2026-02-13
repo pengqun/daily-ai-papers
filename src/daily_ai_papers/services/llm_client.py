@@ -67,7 +67,12 @@ async def _openai_complete(
 ) -> str:
     from openai import AsyncOpenAI
 
-    client = AsyncOpenAI(api_key=api_key)
+    client_kwargs: dict[str, Any] = {"api_key": api_key}
+    base_url = settings.llm_base_url
+    if base_url:
+        client_kwargs["base_url"] = base_url
+
+    client = AsyncOpenAI(**client_kwargs)
     messages: list[dict[str, Any]] = []
     if system:
         messages.append({"role": "system", "content": system})
@@ -84,7 +89,8 @@ async def _openai_complete(
 
     response = await client.chat.completions.create(**kwargs)
     text = response.choices[0].message.content or ""
-    logger.info("OpenAI %s responded with %d chars", model, len(text))
+    label = base_url or "OpenAI"
+    logger.info("%s %s responded with %d chars", label, model, len(text))
     return text
 
 
