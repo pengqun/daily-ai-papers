@@ -4,7 +4,6 @@ import logging
 import tempfile
 from pathlib import Path
 
-import fitz  # PyMuPDF
 import httpx
 
 logger = logging.getLogger(__name__)
@@ -24,6 +23,8 @@ async def download_pdf(url: str) -> Path:
 
 def extract_text_from_pdf(pdf_path: Path) -> str:
     """Extract full text from a PDF file using PyMuPDF."""
+    import fitz  # PyMuPDF — lazy import to keep download_pdf usable without it
+
     doc = fitz.open(str(pdf_path))
     text_parts: list[str] = []
 

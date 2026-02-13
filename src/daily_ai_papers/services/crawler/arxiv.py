@@ -10,7 +10,7 @@ from daily_ai_papers.services.crawler.base import BaseCrawler, CrawledPaper
 
 logger = logging.getLogger(__name__)
 
-ARXIV_API_URL = "http://export.arxiv.org/api/query"
+ARXIV_API_URL = "https://export.arxiv.org/api/query"
 
 
 class ArxivCrawler(BaseCrawler):
