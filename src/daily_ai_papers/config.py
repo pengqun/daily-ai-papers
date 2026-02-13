@@ -13,7 +13,7 @@ class Settings(BaseSettings):
     redis_url: str = "redis://localhost:6379/0"
 
     # LLM
-    llm_provider: str = "openai"  # "openai" or "anthropic"
+    llm_provider: str = "openai"  # "openai", "anthropic", or "fake" (for testing)
     llm_api_key: str = ""
     llm_base_url: str = ""  # Custom base URL for OpenAI-compatible APIs (e.g. Groq, OpenRouter)
     llm_model: str = "gpt-4o-mini"

@@ -35,14 +35,17 @@ async def llm_complete(
         ValueError: If the configured provider is not supported.
         RuntimeError: If no API key is configured.
     """
+    provider = settings.llm_provider
+    model = model or settings.llm_model
+
+    if provider == "fake":
+        return _fake_complete(prompt, response_json)
+
     api_key = settings.llm_api_key
     if not api_key:
         raise RuntimeError(
             "LLM_API_KEY is not set. Configure it in .env or as an environment variable."
         )
-
-    provider = settings.llm_provider
-    model = model or settings.llm_model
 
     if provider == "openai":
         return await _openai_complete(
@@ -118,6 +121,62 @@ async def _anthropic_complete(
     text = response.content[0].text
     logger.info("Anthropic %s responded with %d chars", model, len(text))
     return text
+
+
+def _fake_complete(prompt: str, response_json: bool) -> str:
+    """Return canned responses for testing without an LLM API key.
+
+    Recognises prompts from metadata_extractor and translator by keyword
+    matching and returns structurally-valid responses so the full pipeline
+    can be exercised offline.
+    """
+    prompt_lower = prompt.lower()
+
+    # Metadata extraction prompt
+    if "extract structured metadata" in prompt_lower or "contributions" in prompt_lower and "keywords" in prompt_lower:
+        return json.dumps({
+            "summary": (
+                "This paper proposes the Transformer, a novel architecture based entirely "
+                "on attention mechanisms. It eliminates recurrence and convolutions, achieving "
+                "state-of-the-art results on machine translation benchmarks while being more "
+                "parallelizable and faster to train."
+            ),
+            "contributions": [
+                "Introduced the Transformer architecture based solely on attention",
+                "Achieved new SOTA on WMT 2014 English-to-German and English-to-French translation",
+                "Demonstrated superior training efficiency compared to recurrent models",
+            ],
+            "keywords": [
+                "transformer", "attention mechanism", "self-attention",
+                "machine translation", "sequence-to-sequence", "neural network",
+                "encoder-decoder", "multi-head attention",
+            ],
+            "methodology": (
+                "The Transformer uses stacked self-attention and point-wise fully connected "
+                "layers for both encoder and decoder, replacing recurrence entirely."
+            ),
+            "results": (
+                "The model achieved 28.4 BLEU on WMT 2014 English-to-German and 41.8 BLEU "
+                "on English-to-French, surpassing all previous single models and ensembles."
+            ),
+        })
+
+    # Translation prompt (Chinese)
+    if "chinese" in prompt_lower or "中文" in prompt_lower:
+        return "我们提出了一种新的网络架构——Transformer，完全基于注意力机制。"
+
+    # Translation prompt (Japanese)
+    if "japanese" in prompt_lower or "日本語" in prompt_lower:
+        return "注意力こそが全てである。"
+
+    # Translation prompt (other languages)
+    if "translate" in prompt_lower:
+        return "Traducción simulada del texto original para pruebas."
+
+    # Fallback
+    if response_json:
+        return json.dumps({"answer": "fake response", "status": "ok"})
+    return "5"
 
 
 def parse_json_response(text: str) -> dict[str, Any]:
