@@ -20,3 +20,45 @@ def crawl_all_sources() -> dict[str, int]:
     """
     logger.info("crawl_all_sources task triggered")
     return {"new_papers": 0}
+
+
+@app.task(
+    name="daily_ai_papers.tasks.crawl_tasks.fetch_submitted_paper",
+    bind=True,
+    max_retries=3,
+    default_retry_delay=30,
+)
+def fetch_submitted_paper(self, source: str, source_id: str) -> dict[str, str]:  # type: ignore[no-untyped-def]
+    """Async Celery task: fetch & process a single manually-submitted paper.
+
+    This task is dispatched after a paper is submitted via the API. It runs
+    the full pipeline: fetch metadata → download PDF → parse → analyze.
+
+    Args:
+        source: Paper source name (e.g. "arxiv").
+        source_id: Source-specific paper ID (e.g. "2401.00001").
+    """
+    import asyncio
+
+    from daily_ai_papers.services.crawler.arxiv import ArxivCrawler
+
+    crawlers = {"arxiv": ArxivCrawler()}
+
+    crawler = crawlers.get(source)
+    if crawler is None:
+        return {"source_id": source_id, "status": "error", "message": f"Unknown source: {source}"}
+
+    try:
+        paper = asyncio.get_event_loop().run_until_complete(
+            crawler.fetch_paper_by_id(source_id)
+        )
+    except Exception as exc:
+        logger.exception("Failed to fetch %s:%s", source, source_id)
+        raise self.retry(exc=exc)
+
+    if paper is None:
+        return {"source_id": source_id, "status": "not_found"}
+
+    logger.info("Fetched submitted paper %s:%s — %s", source, source_id, paper.title)
+    # TODO: chain into parse_paper task once Phase 3 is implemented
+    return {"source_id": source_id, "status": "fetched", "title": paper.title}

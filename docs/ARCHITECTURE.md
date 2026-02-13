@@ -192,6 +192,7 @@ PENDING → CRAWLED → DOWNLOADING → PARSED → ANALYZED → EMBEDDED → REA
 |--------|------|-------------|
 | GET | `/api/v1/papers` | List papers (paginated, filterable) |
 | GET | `/api/v1/papers/{id}` | Get paper detail |
+| POST | `/api/v1/papers/submit` | Manually submit paper IDs to crawl (see below) |
 | GET | `/api/v1/papers/search` | Full-text + semantic search |
 | POST | `/api/v1/papers/{id}/bookmark` | Bookmark a paper |
 | POST | `/api/v1/papers/{id}/tags` | Add tags to a paper |
@@ -211,6 +212,74 @@ PENDING → CRAWLED → DOWNLOADING → PARSED → ANALYZED → EMBEDDED → REA
 | POST | `/api/v1/tasks/crawl` | Trigger a manual crawl |
 | GET | `/api/v1/tasks/{task_id}` | Get task status |
 
+### 5.4 Paper Submission (Manual Crawl)
+
+Users can proactively submit papers by providing source-specific IDs (e.g. arXiv IDs).
+
+**Request:** `POST /api/v1/papers/submit`
+
+```json
+{
+  "source": "arxiv",
+  "paper_ids": ["2401.00001", "2401.00002"]
+}
+```
+
+**Response:**
+
+```json
+{
+  "total": 2,
+  "results": [
+    {
+      "source_id": "2401.00001",
+      "status": "queued",
+      "paper_id": 42,
+      "message": "Paper queued for processing: Attention Is All You Need"
+    },
+    {
+      "source_id": "2401.00002",
+      "status": "duplicate",
+      "paper_id": 17,
+      "message": "Paper already exists (id=17)"
+    }
+  ]
+}
+```
+
+**Result statuses:**
+
+| Status | Meaning |
+|--------|---------|
+| `queued` | New paper created and queued for parsing |
+| `duplicate` | Paper already exists in the database |
+| `not_found` | Source API returned no result for this ID |
+| `error` | Unexpected failure fetching this ID |
+
+**Flow:**
+
+```
+User submits IDs via API
+        │
+        ▼
+ ┌──────────────┐    per ID     ┌──────────────────┐
+ │ Submit API   │──────────────►│ Crawler           │
+ │ endpoint     │               │ .fetch_paper_by_id│
+ └──────┬───────┘               └────────┬─────────┘
+        │                                │
+        ▼                                ▼
+ ┌──────────────┐               ┌──────────────────┐
+ │ Dedup check  │               │ Return metadata   │
+ │ (DB lookup)  │               │ or None           │
+ └──────┬───────┘               └──────────────────┘
+        │
+        ▼
+ ┌──────────────┐    async      ┌──────────────────┐
+ │ Store paper  │──────────────►│ Parse task        │
+ │ status=crawled│              │ (Celery)          │
+ └──────────────┘               └──────────────────┘
+```
+
 ## 6. Crawler Design
 
 ### 6.1 Abstract Interface
@@ -224,6 +293,11 @@ class BaseCrawler(ABC):
         max_results: int,
         days_back: int,
     ) -> list[CrawledPaper]: ...
+
+    @abstractmethod
+    async def fetch_paper_by_id(self, paper_id: str) -> CrawledPaper | None:
+        """Fetch a single paper by source-specific ID (used by manual submission)."""
+        ...
 ```
 
 ### 6.2 Data Sources

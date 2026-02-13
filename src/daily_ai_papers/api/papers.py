@@ -7,7 +7,13 @@ from sqlalchemy.orm import selectinload
 
 from daily_ai_papers.database import get_db
 from daily_ai_papers.models.paper import Paper
-from daily_ai_papers.schemas.paper import PaperDetail, PaperListItem
+from daily_ai_papers.schemas.paper import (
+    PaperDetail,
+    PaperListItem,
+    SubmitPaperRequest,
+    SubmitPaperResponse,
+)
+from daily_ai_papers.services.submission import submit_papers
 
 router = APIRouter()
 
@@ -33,6 +39,31 @@ async def list_papers(
 
     result = await db.execute(stmt)
     return list(result.scalars().all())
+
+
+@router.post("/submit", response_model=SubmitPaperResponse)
+async def submit_paper(
+    request: SubmitPaperRequest,
+    db: AsyncSession = Depends(get_db),
+) -> SubmitPaperResponse:
+    """Manually submit paper IDs to crawl and process.
+
+    Accepts a list of source-specific IDs (e.g. arXiv IDs). Each paper is
+    fetched from the source API, deduplicated, and queued for parsing.
+
+    Example request body::
+
+        {
+            "source": "arxiv",
+            "paper_ids": ["2401.00001", "2401.00002"]
+        }
+    """
+    results = await submit_papers(
+        source=request.source.value,
+        paper_ids=request.paper_ids,
+        db=db,
+    )
+    return SubmitPaperResponse(total=len(results), results=results)
 
 
 @router.get("/{paper_id}", response_model=PaperDetail)

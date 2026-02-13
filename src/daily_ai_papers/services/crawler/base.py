@@ -40,3 +40,15 @@ class BaseCrawler(ABC):
             List of crawled paper metadata.
         """
         ...
+
+    @abstractmethod
+    async def fetch_paper_by_id(self, paper_id: str) -> CrawledPaper | None:
+        """Fetch a single paper by its source-specific ID.
+
+        Args:
+            paper_id: Source-specific identifier (e.g., "2401.00001" for arXiv).
+
+        Returns:
+            The crawled paper, or None if not found.
+        """
+        ...
