@@ -62,3 +62,11 @@ testpaths = ["tests"]
 python_version = "3.11"
 strict = true
 plugins = ["pydantic.mypy"]
+
+[[tool.mypy.overrides]]
+module = [
+    "celery.*",
+    "fitz",
+    "feedparser",
+]
+ignore_missing_imports = true

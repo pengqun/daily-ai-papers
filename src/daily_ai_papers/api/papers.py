@@ -34,7 +34,7 @@ async def list_papers(
     stmt = select(Paper).options(selectinload(Paper.authors))
 
     if category:
-        stmt = stmt.where(Paper.categories.any(category))
+        stmt = stmt.where(Paper.categories.any(category))  # type: ignore[arg-type]
     if status:
         stmt = stmt.where(Paper.status == status)
 

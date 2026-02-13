@@ -7,7 +7,7 @@ from daily_ai_papers.tasks.celery_app import app
 logger = logging.getLogger(__name__)
 
 
-@app.task(name="daily_ai_papers.tasks.crawl_tasks.crawl_all_sources")
+@app.task(name="daily_ai_papers.tasks.crawl_tasks.crawl_all_sources")  # type: ignore[misc]
 def crawl_all_sources() -> dict[str, int]:
     """Crawl papers from all configured sources.
 
@@ -22,7 +22,7 @@ def crawl_all_sources() -> dict[str, int]:
     return {"new_papers": 0}
 
 
-@app.task(
+@app.task(  # type: ignore[misc]
     name="daily_ai_papers.tasks.crawl_tasks.fetch_submitted_paper",
     bind=True,
     max_retries=3,

@@ -116,7 +116,7 @@ async def _anthropic_complete(
         kwargs["system"] = system
 
     response = await client.messages.create(**kwargs)
-    text = response.content[0].text
+    text: str = response.content[0].text
     logger.info("Anthropic %s responded with %d chars", model, len(text))
     return text
 
@@ -198,4 +198,5 @@ def parse_json_response(text: str) -> dict[str, Any]:
         lines = cleaned.split("\n")
         lines = [line for line in lines if not line.strip().startswith("```")]
         cleaned = "\n".join(lines).strip()
-    return json.loads(cleaned)
+    result: dict[str, Any] = json.loads(cleaned)
+    return result
