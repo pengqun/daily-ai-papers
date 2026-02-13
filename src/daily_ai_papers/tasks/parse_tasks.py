@@ -7,7 +7,7 @@ from daily_ai_papers.tasks.celery_app import app
 logger = logging.getLogger(__name__)
 
 
-@app.task(name="daily_ai_papers.tasks.parse_tasks.parse_paper")  # type: ignore[misc]
+@app.task(name="daily_ai_papers.tasks.parse_tasks.parse_paper")  # type: ignore[untyped-decorator]
 def parse_paper(paper_id: int) -> dict[str, str]:
     """Download, parse, and analyze a single paper.
 
