@@ -1,5 +1,7 @@
 """Paper CRUD and search API endpoints."""
 
+from typing import Annotated
+
 from fastapi import APIRouter, Depends, Query
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -17,14 +19,16 @@ from daily_ai_papers.services.submission import submit_papers
 
 router = APIRouter()
 
+DbSession = Annotated[AsyncSession, Depends(get_db)]
+
 
 @router.get("", response_model=list[PaperListItem])
 async def list_papers(
+    db: DbSession,
     page: int = Query(1, ge=1),
     page_size: int = Query(20, ge=1, le=100),
     category: str | None = None,
     status: str | None = None,
-    db: AsyncSession = Depends(get_db),
 ) -> list[Paper]:
     """List papers with pagination and optional filters."""
     stmt = select(Paper).options(selectinload(Paper.authors))
@@ -44,7 +48,7 @@ async def list_papers(
 @router.post("/submit", response_model=SubmitPaperResponse)
 async def submit_paper(
     request: SubmitPaperRequest,
-    db: AsyncSession = Depends(get_db),
+    db: DbSession,
 ) -> SubmitPaperResponse:
     """Manually submit paper IDs to crawl and process.
 
@@ -67,7 +71,7 @@ async def submit_paper(
 
 
 @router.get("/{paper_id}", response_model=PaperDetail)
-async def get_paper(paper_id: int, db: AsyncSession = Depends(get_db)) -> Paper:
+async def get_paper(paper_id: int, db: DbSession) -> Paper:
     """Get full paper details by ID."""
     stmt = select(Paper).options(selectinload(Paper.authors)).where(Paper.id == paper_id)
     result = await db.execute(stmt)

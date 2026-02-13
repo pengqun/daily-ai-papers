@@ -29,6 +29,7 @@ pytestmark = pytest.mark.skipif(
 
 # ── LLM client ──────────────────────────────────────────────────────────────
 
+
 class TestLLMClient:
     """Test the low-level llm_complete function."""
 
@@ -61,6 +62,7 @@ class TestLLMClient:
 
 # ── Metadata extraction ────────────────────────────────────────────────────
 
+
 class TestMetadataExtraction:
     """Test LLM-based metadata extraction on a real abstract."""
 
@@ -72,10 +74,7 @@ class TestMetadataExtraction:
 
         # Summary should be non-empty and mention the paper's topic
         assert len(meta.summary) > 50
-        assert any(
-            kw in meta.summary.lower()
-            for kw in ["transformer", "attention", "translation"]
-        )
+        assert any(kw in meta.summary.lower() for kw in ["transformer", "attention", "translation"])
 
         # Should have at least 1 contribution and 3 keywords
         assert len(meta.contributions) >= 1
@@ -93,6 +92,7 @@ class TestMetadataExtraction:
 
 
 # ── Translation ─────────────────────────────────────────────────────────────
+
 
 class TestTranslation:
     """Test LLM-based translation."""

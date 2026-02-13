@@ -52,9 +52,7 @@ async def llm_complete(
             api_key, model, system, prompt, temperature, max_tokens, response_json
         )
     elif provider == "anthropic":
-        return await _anthropic_complete(
-            api_key, model, system, prompt, temperature, max_tokens
-        )
+        return await _anthropic_complete(api_key, model, system, prompt, temperature, max_tokens)
     else:
         raise ValueError(f"Unsupported LLM provider: {provider}")
 
@@ -133,33 +131,43 @@ def _fake_complete(prompt: str, response_json: bool) -> str:
     prompt_lower = prompt.lower()
 
     # Metadata extraction prompt
-    if "extract structured metadata" in prompt_lower or ("contributions" in prompt_lower and "keywords" in prompt_lower):
-        return json.dumps({
-            "summary": (
-                "This paper proposes the Transformer, a novel architecture based entirely "
-                "on attention mechanisms. It eliminates recurrence and convolutions, achieving "
-                "state-of-the-art results on machine translation benchmarks while being more "
-                "parallelizable and faster to train."
-            ),
-            "contributions": [
-                "Introduced the Transformer architecture based solely on attention",
-                "Achieved new SOTA on WMT 2014 English-to-German and English-to-French translation",
-                "Demonstrated superior training efficiency compared to recurrent models",
-            ],
-            "keywords": [
-                "transformer", "attention mechanism", "self-attention",
-                "machine translation", "sequence-to-sequence", "neural network",
-                "encoder-decoder", "multi-head attention",
-            ],
-            "methodology": (
-                "The Transformer uses stacked self-attention and point-wise fully connected "
-                "layers for both encoder and decoder, replacing recurrence entirely."
-            ),
-            "results": (
-                "The model achieved 28.4 BLEU on WMT 2014 English-to-German and 41.8 BLEU "
-                "on English-to-French, surpassing all previous single models and ensembles."
-            ),
-        })
+    is_metadata_prompt = "extract structured metadata" in prompt_lower or (
+        "contributions" in prompt_lower and "keywords" in prompt_lower
+    )
+    if is_metadata_prompt:
+        return json.dumps(
+            {
+                "summary": (
+                    "This paper proposes the Transformer, a novel architecture based entirely "
+                    "on attention mechanisms. It eliminates recurrence and convolutions, achieving "
+                    "state-of-the-art results on machine translation benchmarks while being more "
+                    "parallelizable and faster to train."
+                ),
+                "contributions": [
+                    "Introduced the Transformer architecture based solely on attention",
+                    "Achieved new SOTA on WMT 2014 EN-DE and EN-FR translation",
+                    "Demonstrated superior training efficiency compared to recurrent models",
+                ],
+                "keywords": [
+                    "transformer",
+                    "attention mechanism",
+                    "self-attention",
+                    "machine translation",
+                    "sequence-to-sequence",
+                    "neural network",
+                    "encoder-decoder",
+                    "multi-head attention",
+                ],
+                "methodology": (
+                    "The Transformer uses stacked self-attention and point-wise fully connected "
+                    "layers for both encoder and decoder, replacing recurrence entirely."
+                ),
+                "results": (
+                    "The model achieved 28.4 BLEU on WMT 2014 English-to-German and 41.8 BLEU "
+                    "on English-to-French, surpassing all previous single models and ensembles."
+                ),
+            }
+        )
 
     # Translation prompt (Chinese)
     if "chinese" in prompt_lower or "中文" in prompt_lower:
@@ -188,6 +196,6 @@ def parse_json_response(text: str) -> dict[str, Any]:
     if cleaned.startswith("```"):
         # Strip markdown code fences
         lines = cleaned.split("\n")
-        lines = [l for l in lines if not l.strip().startswith("```")]
+        lines = [line for line in lines if not line.strip().startswith("```")]
         cleaned = "\n".join(lines).strip()
     return json.loads(cleaned)

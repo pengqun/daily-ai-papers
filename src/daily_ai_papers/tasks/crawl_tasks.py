@@ -51,7 +51,7 @@ def fetch_submitted_paper(self, source: str, source_id: str) -> dict[str, str]: 
         paper = asyncio.run(crawler.fetch_paper_by_id(source_id))
     except Exception as exc:
         logger.exception("Failed to fetch %s:%s", source, source_id)
-        raise self.retry(exc=exc)
+        raise self.retry(exc=exc) from exc
 
     if paper is None:
         return {"source_id": source_id, "status": "not_found"}

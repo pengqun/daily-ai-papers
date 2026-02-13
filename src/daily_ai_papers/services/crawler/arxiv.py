@@ -1,7 +1,7 @@
 """arXiv paper crawler implementation."""
 
 import logging
-from datetime import datetime, timedelta, timezone
+from datetime import UTC, datetime, timedelta
 from typing import Any
 
 import feedparser
@@ -16,7 +16,7 @@ ARXIV_API_URL = "https://export.arxiv.org/api/query"
 
 def _parse_entry(entry: Any, paper_id: str | None = None) -> CrawledPaper:
     """Convert a feedparser entry into a CrawledPaper."""
-    published = datetime(*entry.published_parsed[:6], tzinfo=timezone.utc)
+    published = datetime(*entry.published_parsed[:6], tzinfo=UTC)
     pdf_url = next(
         (link.href for link in entry.links if link.get("type") == "application/pdf"),
         None,
@@ -56,11 +56,11 @@ class ArxivCrawler(BaseCrawler):
             response.raise_for_status()
 
         feed = feedparser.parse(response.text)
-        cutoff = datetime.now(timezone.utc) - timedelta(days=days_back)
+        cutoff = datetime.now(UTC) - timedelta(days=days_back)
         papers: list[CrawledPaper] = []
 
         for entry in feed.entries:
-            published = datetime(*entry.published_parsed[:6], tzinfo=timezone.utc)
+            published = datetime(*entry.published_parsed[:6], tzinfo=UTC)
             if published < cutoff:
                 continue
             papers.append(_parse_entry(entry))

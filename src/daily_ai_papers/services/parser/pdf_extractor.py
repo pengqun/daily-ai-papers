@@ -15,9 +15,8 @@ async def download_pdf(url: str) -> Path:
         response = await client.get(url)
         response.raise_for_status()
 
-    tmp = tempfile.NamedTemporaryFile(suffix=".pdf", delete=False)
-    tmp.write(response.content)
-    tmp.close()
+    with tempfile.NamedTemporaryFile(suffix=".pdf", delete=False) as tmp:
+        tmp.write(response.content)
     return Path(tmp.name)
 
 

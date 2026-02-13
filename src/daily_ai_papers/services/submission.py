@@ -116,5 +116,6 @@ async def submit_papers(
     await db.commit()
 
     queued = sum(1 for r in results if r.status == "queued")
-    logger.info("Submitted %d paper(s): %d queued, %d skipped", len(results), queued, len(results) - queued)
+    skipped = len(results) - queued
+    logger.info("Submitted %d paper(s): %d queued, %d skipped", len(results), queued, skipped)
     return results
