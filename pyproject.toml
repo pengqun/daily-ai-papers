@@ -1,0 +1,64 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.backends"
+
+[project]
+name = "daily-ai-papers"
+version = "0.1.0"
+description = "Crawl, analyze, translate, display and chat with newest AI papers"
+readme = "README.md"
+license = "Apache-2.0"
+requires-python = ">=3.11"
+dependencies = [
+    # Web framework
+    "fastapi>=0.115",
+    "uvicorn[standard]>=0.32",
+    # Database
+    "sqlalchemy[asyncio]>=2.0",
+    "asyncpg>=0.30",
+    "alembic>=1.14",
+    "pgvector>=0.3",
+    # Task queue
+    "celery[redis]>=5.4",
+    # HTTP client
+    "httpx>=0.28",
+    # PDF processing
+    "pymupdf>=1.25",
+    # LLM
+    "openai>=1.60",
+    "anthropic>=0.42",
+    # Data validation & settings
+    "pydantic>=2.10",
+    "pydantic-settings>=2.7",
+    # XML parsing (arXiv feeds)
+    "feedparser>=6.0",
+    # Utilities
+    "python-dateutil>=2.9",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=8.0",
+    "pytest-asyncio>=0.25",
+    "pytest-cov>=6.0",
+    "httpx",           # for FastAPI TestClient
+    "ruff>=0.9",
+    "mypy>=1.14",
+    "pre-commit>=4.0",
+]
+
+[tool.ruff]
+target-version = "py311"
+line-length = 100
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "N", "W", "UP", "B", "SIM"]
+
+[tool.pytest.ini_options]
+asyncio_mode = "auto"
+testpaths = ["tests"]
+
+[tool.mypy]
+python_version = "3.11"
+strict = true
+plugins = ["pydantic.mypy"]
