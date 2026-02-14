@@ -44,9 +44,7 @@ class TestFetchSubmittedPaper:
         mock_crawler = AsyncMock()
 
         with (
-            patch(
-                "daily_ai_papers.services.submission._get_crawler", return_value=mock_crawler
-            ),
+            patch("daily_ai_papers.services.submission._get_crawler", return_value=mock_crawler),
             patch("asyncio.run", return_value=None),
         ):
             result = fetch_submitted_paper("arxiv", "9999.99999")
@@ -65,9 +63,7 @@ class TestFetchSubmittedPaper:
         mock_crawler = AsyncMock()
 
         with (
-            patch(
-                "daily_ai_papers.services.submission._get_crawler", return_value=mock_crawler
-            ),
+            patch("daily_ai_papers.services.submission._get_crawler", return_value=mock_crawler),
             patch("asyncio.run", return_value=crawled),
         ):
             result = fetch_submitted_paper("arxiv", "2401.00001")
@@ -85,9 +81,7 @@ class TestFetchSubmittedPaper:
             patch.object(
                 fetch_submitted_paper, "retry", side_effect=RuntimeError("retry called")
             ) as mock_retry,
-            patch(
-                "daily_ai_papers.services.submission._get_crawler", return_value=mock_crawler
-            ),
+            patch("daily_ai_papers.services.submission._get_crawler", return_value=mock_crawler),
             patch("asyncio.run", side_effect=ConnectionError("network down")),
             pytest.raises(RuntimeError, match="retry called"),
         ):

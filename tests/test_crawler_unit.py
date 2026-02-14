@@ -28,13 +28,9 @@ def _make_feed_entry(
     has_pdf: bool = True,
 ) -> SimpleNamespace:
     """Build a minimal feedparser-like entry object."""
-    links: list[_FeedLink] = [
-        _FeedLink(href=f"https://arxiv.org/abs/{paper_id}", type="text/html")
-    ]
+    links: list[_FeedLink] = [_FeedLink(href=f"https://arxiv.org/abs/{paper_id}", type="text/html")]
     if has_pdf:
-        links.append(
-            _FeedLink(href=f"https://arxiv.org/pdf/{paper_id}", type="application/pdf")
-        )
+        links.append(_FeedLink(href=f"https://arxiv.org/pdf/{paper_id}", type="application/pdf"))
 
     return SimpleNamespace(
         id=f"http://arxiv.org/abs/{paper_id}",

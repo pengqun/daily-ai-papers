@@ -201,9 +201,7 @@ class TestSubmitPapers:
         db.execute.return_value = mock_db_result
 
         with patch("daily_ai_papers.services.submission._get_crawler", return_value=mock_crawler):
-            results = await submit_papers(
-                "arxiv", ["2401.00001", "2401.00002", "9999.99999"], db
-            )
+            results = await submit_papers("arxiv", ["2401.00001", "2401.00002", "9999.99999"], db)
 
         statuses = {r.source_id: r.status for r in results}
         assert statuses["2401.00001"] == "queued"

@@ -53,36 +53,28 @@ class TestLlmCompleteProviderValidation:
     """Test provider routing and error handling."""
 
     @pytest.mark.asyncio
-    async def test_unsupported_provider_raises(
-        self, monkeypatch: pytest.MonkeyPatch
-    ) -> None:
+    async def test_unsupported_provider_raises(self, monkeypatch: pytest.MonkeyPatch) -> None:
         monkeypatch.setattr(settings, "llm_provider", "not_a_provider")
         monkeypatch.setattr(settings, "llm_api_key", "fake-key")
         with pytest.raises(ValueError, match="Unsupported LLM provider"):
             await llm_complete("hello")
 
     @pytest.mark.asyncio
-    async def test_openai_without_api_key_raises(
-        self, monkeypatch: pytest.MonkeyPatch
-    ) -> None:
+    async def test_openai_without_api_key_raises(self, monkeypatch: pytest.MonkeyPatch) -> None:
         monkeypatch.setattr(settings, "llm_provider", "openai")
         monkeypatch.setattr(settings, "llm_api_key", "")
         with pytest.raises(RuntimeError, match="LLM_API_KEY is not set"):
             await llm_complete("hello")
 
     @pytest.mark.asyncio
-    async def test_anthropic_without_api_key_raises(
-        self, monkeypatch: pytest.MonkeyPatch
-    ) -> None:
+    async def test_anthropic_without_api_key_raises(self, monkeypatch: pytest.MonkeyPatch) -> None:
         monkeypatch.setattr(settings, "llm_provider", "anthropic")
         monkeypatch.setattr(settings, "llm_api_key", "")
         with pytest.raises(RuntimeError, match="LLM_API_KEY is not set"):
             await llm_complete("hello")
 
     @pytest.mark.asyncio
-    async def test_fake_provider_needs_no_key(
-        self, monkeypatch: pytest.MonkeyPatch
-    ) -> None:
+    async def test_fake_provider_needs_no_key(self, monkeypatch: pytest.MonkeyPatch) -> None:
         monkeypatch.setattr(settings, "llm_provider", "fake")
         monkeypatch.setattr(settings, "llm_api_key", "")
         result = await llm_complete("What is 2+3?")
