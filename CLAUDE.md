@@ -23,7 +23,7 @@ src/daily_ai_papers/
 ├── api/
 │   ├── papers.py            # GET/POST paper endpoints (implemented)
 │   ├── chat.py              # Chat endpoint (stub)
-│   └── tasks.py             # Task management endpoints (stub)
+│   └── tasks.py             # Task management endpoints (implemented)
 ├── services/
 │   ├── crawler/
 │   │   ├── base.py          # Abstract BaseCrawler interface + CrawledPaper dataclass
@@ -46,7 +46,8 @@ tests/
 ├── test_fake_llm.py         # LLM tests using fake provider (no API key needed)
 ├── test_llm_integration.py  # Real LLM provider tests
 ├── test_pdf_extractor_integration.py  # PDF extraction tests
-└── test_pipeline_e2e.py     # End-to-end pipeline tests
+├── test_pipeline_e2e.py     # End-to-end pipeline tests
+└── test_tasks_api.py        # Task API endpoint tests
 
 docker/
 ├── Dockerfile               # python:3.11-slim + libmupdf-dev
@@ -168,9 +169,9 @@ Key settings (see `.env.example` for full list):
 |-------|--------|-------|
 | 1 | Done | Project setup, models, config, basic API |
 | 2 | Partial | Crawler scheduling (arXiv crawler works; `crawl_all_sources` task is a stub) |
-| 3 | TODO | PDF parsing + LLM analysis pipeline |
+| 3 | Partial | PDF parsing + LLM analysis pipeline (services done; Celery task `parse_paper` is a stub) |
 | 4 | TODO | Text embeddings + pgvector semantic search |
-| 5 | TODO | Multi-language translation pipeline |
+| 5 | Partial | Multi-language translation pipeline (translator service done; not yet integrated into pipeline) |
 | 6 | TODO | Chat/RAG service |
 | 7 | TODO | Daily digest, bookmarks, tags, notifications |
 
