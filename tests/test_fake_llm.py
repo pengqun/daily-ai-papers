@@ -95,6 +95,8 @@ class TestFakeE2EPipeline:
 
     @pytest.mark.asyncio
     async def test_full_pipeline(self) -> None:
+        pytest.importorskip("fitz", reason="PyMuPDF not installed")
+
         # Step 1: Crawl (real arXiv call)
         crawler = ArxivCrawler()
         paper = await crawler.fetch_paper_by_id(KNOWN_ARXIV_ID)
