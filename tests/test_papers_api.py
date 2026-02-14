@@ -192,7 +192,8 @@ class TestGetPaper:
     @pytest.mark.asyncio
     async def test_get_nonexistent_paper_returns_500(self) -> None:
         """When scalar_one() finds no rows, SQLAlchemy raises NoResultFound → 500."""
-        from httpx import ASGITransport, AsyncClient as AC
+        from httpx import ASGITransport
+        from httpx import AsyncClient as AsyncHttpClient
         from sqlalchemy.exc import NoResultFound
 
         from daily_ai_papers.database import get_db
@@ -209,7 +210,7 @@ class TestGetPaper:
         app.dependency_overrides[get_db] = override_get_db
         try:
             transport = ASGITransport(app=app, raise_app_exceptions=False)
-            async with AC(transport=transport, base_url="http://testserver") as client:
+            async with AsyncHttpClient(transport=transport, base_url="http://testserver") as client:
                 resp = await client.get("/api/v1/papers/999")
         finally:
             app.dependency_overrides.clear()

@@ -10,7 +10,6 @@ from unittest.mock import AsyncMock, MagicMock, patch
 import pytest
 
 from daily_ai_papers.models.paper import Paper
-from daily_ai_papers.schemas.paper import SubmitPaperResult
 from daily_ai_papers.services.crawler.arxiv import ArxivCrawler
 from daily_ai_papers.services.crawler.base import CrawledPaper
 from daily_ai_papers.services.submission import _get_crawler, _upsert_paper, submit_papers

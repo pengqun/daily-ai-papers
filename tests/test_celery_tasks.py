@@ -3,7 +3,7 @@
 Tests task logic with mocked crawlers — no Celery broker needed.
 """
 
-from unittest.mock import AsyncMock, MagicMock, patch
+from unittest.mock import AsyncMock, patch
 
 import pytest
 
@@ -43,11 +43,13 @@ class TestFetchSubmittedPaper:
 
         mock_crawler = AsyncMock()
 
-        with patch(
-            "daily_ai_papers.services.submission._get_crawler", return_value=mock_crawler
+        with (
+            patch(
+                "daily_ai_papers.services.submission._get_crawler", return_value=mock_crawler
+            ),
+            patch("asyncio.run", return_value=None),
         ):
-            with patch("asyncio.run", return_value=None):
-                result = fetch_submitted_paper("arxiv", "9999.99999")
+            result = fetch_submitted_paper("arxiv", "9999.99999")
 
         assert result["status"] == "not_found"
         assert result["source_id"] == "9999.99999"
@@ -62,11 +64,13 @@ class TestFetchSubmittedPaper:
         )
         mock_crawler = AsyncMock()
 
-        with patch(
-            "daily_ai_papers.services.submission._get_crawler", return_value=mock_crawler
+        with (
+            patch(
+                "daily_ai_papers.services.submission._get_crawler", return_value=mock_crawler
+            ),
+            patch("asyncio.run", return_value=crawled),
         ):
-            with patch("asyncio.run", return_value=crawled):
-                result = fetch_submitted_paper("arxiv", "2401.00001")
+            result = fetch_submitted_paper("arxiv", "2401.00001")
 
         assert result["status"] == "fetched"
         assert result["title"] == "A Great Paper"
@@ -77,15 +81,17 @@ class TestFetchSubmittedPaper:
         mock_crawler = AsyncMock()
 
         # Patch the task object's retry method directly
-        with patch.object(
-            fetch_submitted_paper, "retry", side_effect=RuntimeError("retry called")
-        ) as mock_retry:
-            with patch(
+        with (
+            patch.object(
+                fetch_submitted_paper, "retry", side_effect=RuntimeError("retry called")
+            ) as mock_retry,
+            patch(
                 "daily_ai_papers.services.submission._get_crawler", return_value=mock_crawler
-            ):
-                with patch("asyncio.run", side_effect=ConnectionError("network down")):
-                    with pytest.raises(RuntimeError, match="retry called"):
-                        fetch_submitted_paper("arxiv", "2401.00001")
+            ),
+            patch("asyncio.run", side_effect=ConnectionError("network down")),
+            pytest.raises(RuntimeError, match="retry called"),
+        ):
+            fetch_submitted_paper("arxiv", "2401.00001")
 
         mock_retry.assert_called_once()
 
